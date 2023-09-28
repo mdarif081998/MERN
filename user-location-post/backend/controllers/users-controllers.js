@@ -38,7 +38,7 @@ const signup = async (req, res, next) => {
     const createdUser = new User({
         name,
         email,
-        image: 'https://live.staticflickr.com/7631/26849088292_36fc52ee90_b.jpg',
+        image: req.file.path,
         password,
         places: []
     });
@@ -63,10 +63,10 @@ const login = async (req, res, next) => {
     }
 
     if(!existingUser || existingUser.password !== password){
-        const error = new HttpError('Invalid user crentials!', 422);
+        const error = new HttpError('Invalid user credentials!', 422);
         return next(error);
     }
-    res.json({message: 'User logged in successfully.', user: existingUser});
+    res.json({message: 'User logged in successfully.', user: existingUser.toObject({getters: true})});
 }
 
 exports.getUsers = getUsers;

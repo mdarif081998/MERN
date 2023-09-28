@@ -1,6 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
 const userRoutes = require('./routes/users-route');
 const placesRoutes = require('./routes/places-route');
@@ -8,6 +12,16 @@ const HttpError = require('./models/http-error');
 const app = express();
 
 app.use(bodyParser.json());
+dotenv.config({path: './config.env'});
+
+app.use('/uploads/images', express.static(path.join('uploads', 'images')));
+
+app.use((req, res, next)=>{
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorisation');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE')
+    next();
+})
 
 app.use('/api/users', userRoutes);
 app.use('/api/places', placesRoutes);
@@ -18,6 +32,12 @@ app.use((req, res, next) => {
 })
 
 app.use((error, req, res, next) => {
+    if(req.file){
+        fs.unlink(req.file.path, (err) => {
+            console.log(err);
+        })
+    }
+
     if(res.headerSent){
         return next(error);
     }
@@ -26,10 +46,10 @@ app.use((error, req, res, next) => {
     res.json({message: error.message || 'An Unknown error occured'});
 })
 
-mongoose.connect('mongodb+srv://Md-Arif:Techsoftdatabase22@atlascluster.dhgslfz.mongodb.net/places?retryWrites=true&w=majority')
+mongoose.connect(process.env.DATABASE_URL)
 .then(() =>{
-    const PORT = 5000;
-    app.listen(PORT, ()=> console.log('Server started on port: ' + PORT));
+    const port = process.env.PORT;
+    app.listen(port, ()=> console.log('Server started on port: ' + port));
 })
 .catch((error)=>{
     console.log('Error: '+ error);

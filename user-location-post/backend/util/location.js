@@ -2,8 +2,9 @@ const axios = require("axios");
 const HttpError = require("../models/http-error");
  
 async function getCoordsForAddress(address) {
+  const api_token = process.env.MAPBOX_API_TOKEN;
   const response = await axios.get(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/' + ${address} + '.json?access_token=pk.eyJ1IjoibWRhcmlmMDgxOTk4IiwiYSI6ImNsMW5pM2syaTAxMWMzanQ2cTViNHF0OGkifQ.7cOJa2IqlHZDk-cPvn98mw&limit=1'
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/' + ${address} + '.json?access_token=${api_token}&limit=1'
     `
   );
  
