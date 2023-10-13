@@ -49,7 +49,7 @@ const createPlace = async (req, res, next) => {
         console.log(errors)
         return next(new HttpError('Invalid input Data: '+ JSON.stringify(errors),422));
     }
-    const {title, description, address, creator} = req.body;
+    const {title, description, address} = req.body;
 
     let coordinates;
     let createdPlace;
@@ -63,10 +63,10 @@ const createPlace = async (req, res, next) => {
         address,
         location: coordinates,
         image: req.file.path,
-        creator
+        creator: req.userData.userId
     });
 
-    const user = await User.findById(creator);
+    const user = await User.findById(req.userData.userId);
 
     if(!user) return next(new HttpError('Invalid User Id provided to add place.', 404));
     const sess = await mongoose.startSession();
@@ -99,6 +99,11 @@ const updatePlaceById = async (req, res, next) =>{
         const error = new HttpError('Something went wrong. Please try again later...', 500);
         return next(error);
     }
+
+    if(place.creator.toString() !== req.userData.userId){
+        const error = new HttpError('You are not allowed to edit this Place.', 401);
+        return next(error);
+    }
     
     place.title = title;
     place.description = description;
@@ -121,6 +126,10 @@ const deletePlaceById = async (req, res, next) => {
 
         if(!place){
             return next(new HttpError('Could not find a place for the provided id.', 404));
+        }
+        if(place.creator.id !== req.userData.userId){
+            const error = new HttpError('You are not allowed to delete this Place.', 401);
+            return next(error);
         }
         const imagePath = place.image;
         const sess = await mongoose.startSession();

@@ -54,15 +54,13 @@ const Auth = () => {
     const authSubmitHandler = async event => {
         event.preventDefault();
 
-        console.log(formState.inputs);
-
         try{
 
             if(isLoginMode){
                  const responseData = await sendRequest('http://localhost:5000/api/users/login', 
                 'POST', JSON.stringify({ email: formState.inputs.email.value, 
                     password: formState.inputs.password.value}), {'Content-Type': 'application/json'}); 
-                    auth.login(responseData.user.id);
+                    auth.login(responseData.userId, responseData.token);
                 } else {
                     const formData = new FormData();
                     formData.append('email', formState.inputs.email.value);
@@ -71,7 +69,7 @@ const Auth = () => {
                     formData.append('image', formState.inputs.image.value);
 
                     const responseData = await sendRequest('http://localhost:5000/api/users/signup', 'POST', formData);
-                    auth.login(responseData.user.id);
+                    auth.login(responseData.userId, responseData.token);
                     }
                 } catch (err){
                     console.log(err)
